@@ -1,16 +1,18 @@
 #include <iostream>
 #include <ctime>
+#include <ncurses.h>
+#include <unistd.h>
 using namespace std;
 
 // defining the height and width of the board
 #define WIDTH 80
-#define HEIGHT 20
+#define HEIGHT 40
 
 string playerName;
 
-int x, y, fruitX, fruitY; // defining the coordinates of the player
+int x, y, fruitX, fruitY, playerScore; // defining the coordinates of the player
 
-bool gameState; // defining the game state if its still playable or not
+bool gameOver; // defining the game state if its still playable or not
 
 enum class snakesDirection : int // enum scoped type for direction input
 {
@@ -26,7 +28,7 @@ snakesDirection sDir;
 void gameInit()
 {
     // srand(time(0));
-    gameState = false;
+    gameOver = false;
     x = WIDTH / 2;
     y = HEIGHT / 2;
     fruitX = rand() % WIDTH;
@@ -39,7 +41,7 @@ void renderBoard(string playerName)
 {
     system("clear"); // for mac
     // system("cls");//for windows
-    
+
     for (int i = 0; i < WIDTH + 2; i++)
     {
         cout << '=';
@@ -73,15 +75,75 @@ void renderBoard(string playerName)
         cout << "=";
     }
     cout << "\n"
-         << "\t\t\t\tplayer  : " << playerName << "\n"
-         << "\t\t\t\tplayerScore : ";
+         << "\t\t\t\tplayer  : " << playerName << "\n";
+    cout << "\t\t\t\tplayer score : " << playerScore << "\n";
 }
 
 // function to take an user input
-void userInput(){};
+void userInput()
+{
+    initscr(); // initialize the library
+    cbreak();
+    // disables line buffering
+    nodelay(stdscr, TRUE); // set getch to non-blocking mode
+
+    int ch = getch(); // read a charecter
+    switch (ch)
+    {
+    case 'w':
+        sDir = snakesDirection::UP;
+        break;
+    case 'a':
+        sDir = snakesDirection::LEFT;
+        break;
+    case 's':
+        sDir = snakesDirection::DOWN;
+        break;
+    case 'd':
+        sDir = snakesDirection::RIGHT;
+        break;
+    case 't':
+        gameOver = true;
+        break;
+    default:
+        break;
+    }
+
+    endwin(); // end the window
+}
 
 // function to update the game with new parameters
-void updateGame(){};
+void updateGame() //! ----------------> needs the tail rules and logic to be implemented <------------------
+{
+    switch (sDir)
+    {
+    case snakesDirection::UP:
+        y--;
+        break;
+    case snakesDirection::DOWN:
+        y++;
+        break;
+    case snakesDirection::LEFT:
+        x--;
+        break;
+    case snakesDirection::RIGHT:
+        x++;
+        break;
+    default:
+
+        break;
+    }
+
+    if (x == WIDTH || y == HEIGHT || x == 0 || y == 0)
+        gameOver = true;
+
+    if (x == fruitX && y == fruitY)
+    {
+        playerScore += 5;
+        fruitX = rand() % WIDTH;
+        fruitY = rand() % HEIGHT;
+    }
+}
 
 int main()
 {
@@ -92,7 +154,18 @@ int main()
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
     gameInit();
 
-    // while (!gameState)
-    renderBoard(playerName);
-    // userInput();
+    while (!gameOver)
+    {
+        renderBoard(playerName);
+        userInput();
+        updateGame();
+
+        usleep(100 * 1000); // 500 milliseconds
+
+        if (gameOver)
+        {
+            system("clear");
+            main();
+        }
+    }
 }
