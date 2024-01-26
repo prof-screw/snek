@@ -1,0 +1,21 @@
+{
+    "files.associations": {
+        "iostream": "cpp"
+    },
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "banana",
+            "database": "employee",
+            "username": "root",
+            "password": "Halamadrid10"
+        }
+    ]
+}
